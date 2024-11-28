@@ -24,3 +24,4 @@ MAIN_MENU = """
 5 - Изменить задачу
 6 - Удалить задачу
 """
+CATEGORIES_FILEPATH = "data/categories.json"
