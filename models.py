@@ -1,8 +1,8 @@
-from argparse import Namespace
 from datetime import date
 from enum import Enum
 from constants import HANDLERS, CATEGORIES_FILEPATH
 from files_processing import open_json_file, save_to_json_file
+from exeptions import InvalidCommandException
 
 
 class Category:
@@ -87,35 +87,36 @@ class TaskManager:
     def __init__(self):
         self.handlers: dict = HANDLERS
 
-    def execute_command(self, args: Namespace) -> None:
+    def execute_command(self, command: str, params: list) -> None:
         """
-        Запускает метод класса в зависимости от переданного аргумента командной строки.
-        Если аргумент присутствует и не является булевым, передает его в соответствующий обработчик.
-        Если аргумент булевый или отсутствует, вызывает обработчик без параметров.
+        Запускает метод класса в зависимости от переданной команды.
+        Если параметры присутствуют - передает их в соответствующий обработчик.
+        Если нет - вызывает обработчик без параметров.
 
-        :param args: Объект с аргументами командной строки, полученный через argparse.
-        :type args: Namespace
+        :param command: Название команды.
+        :type command: str
+        :param params: Параметры команды.
+        :type params: list
         :return: None
         """
-        for arg_name, handler_name in self.handlers.items():
-            if getattr(args, arg_name):
-                handler = getattr(self, handler_name)
-                args_value = vars(args).get(f"{arg_name}")
+        handler_name = self.handlers.get(command)
+        if handler_name:
+            handler = getattr(self, handler_name)
+            if params:
+                handler(params)
+            else:
+                handler()
+        else:
+            raise InvalidCommandException
 
-                if args_value and not isinstance(args_value, bool):
-                    handler(args_value)
-                else:
-                    handler()
-                break
+    def view_task(self, params: list[str]):
+        pass
 
-    def view_task_list(self):
-        print("Просмотр списка задач")
+    def edit_task(self, params: list[str]):
+        pass
 
-    def view_task_by_name(self, task_name: list[str]):
-        print(f"Просмотр задачи {task_name}")
+    def find_task(self, params: list[str]):
+        pass
 
-    def view_category_list(self):
-        print("Просмотр списка категорий")
-
-    def view_tasks_by_category(self, category_name: list[str]):
-        print("Просмотр задач в категории")
+    def delete_task(self, params: list[str]):
+        pass

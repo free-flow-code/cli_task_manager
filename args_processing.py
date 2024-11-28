@@ -4,27 +4,15 @@ import textwrap
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        prog="Cli Task Manager",
+        prog="TASKY - Cli Task Manager",
         description=textwrap.dedent(
             """
-            Application for managing a task list with the ability to add, complete, delete and search for tasks.
+            Приложение для управления списком задач с возможностью добавления, завершения, удаления и поиска задач.
             """
         )
     )
-    # Просмотр задач
     parser.add_argument(
-        "-tl", "--task-list", action="store_true", help="View the list of tasks."
+        "-c", "--command", choices=["view", "add", "edit", "find", "delete"], help="Команда для выполнения."
     )
-    parser.add_argument(
-        "-t", "--task", nargs=1, type=str, help="View task by name."
-    )
-    parser.add_argument(
-        "-cl", "--category-list", action="store_true", help="View the list of categories."
-    )
-    parser.add_argument(
-        "-c", "--category", nargs=1, type=str, help="View the list of task categories."
-    )
-    # Добавление задачи
-    # Изменение задачи
-    # Удаление задачи
-    # Поиск задач
+    parser.add_argument("-p", "--params", nargs="*", help="Параметры команды.")
+    return parser.parse_args()
