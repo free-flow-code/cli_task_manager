@@ -30,3 +30,4 @@ MAIN_MENU = f"""{Fore.YELLOW}
 """
 WAIT_COMMAND = f"{Fore.BLUE}Ожидание ввода:{Style.RESET_ALL} "
 CATEGORIES_FILEPATH = "data/categories.json"
+TASKS_FILEPATH = "data/tasks.json"

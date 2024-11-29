@@ -4,7 +4,7 @@ import json
 def open_json_file(filepath: str) -> dict:
     try:
         with open(filepath, "r", encoding="utf-8") as file:
-            return json.loads(file.read())
+            return json.load(file)
     except FileNotFoundError:
         return {}
 

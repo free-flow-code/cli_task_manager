@@ -1,57 +1,48 @@
-from datetime import date
 from enum import Enum
-from constants import HANDLERS, CATEGORIES_FILEPATH
+from datetime import date
+from typing import Dict, List
+from constants import HANDLERS, CATEGORIES_FILEPATH, TASKS_FILEPATH
 from files_processing import open_json_file, save_to_json_file
 from exeptions import InvalidCommandException
 
 
 class Category:
-    _categories = {}
-
-    def __new__(cls, *args, filepath: str = CATEGORIES_FILEPATH):
-        cls._categories = open_json_file(filepath)
-        return super().__new__(cls)
+    _filepath: str = CATEGORIES_FILEPATH
+    _categories: Dict[str, List[int]] = open_json_file(_filepath)
 
     def __init__(self, name: str, task_id: int):
         self.name = name
-        self.tasks: list = self._categories.get(name, [])
-        if task_id not in self.tasks:
-            self.tasks.append(task_id)
-            self._categories[name] = self.tasks
-            self._save_categories()
+        self.task_ids = self._add_task_id(task_id)
+        self._save_to_file()
 
-    @classmethod
-    def add_task_to_category(cls, category_name: str, task_id: int) -> None:
-        """
-        Добавляет идентификатор задачу в категорию.
-
-        :param category_name: Название категории, к которой добавляется задача.
-        :type category_name: str
-        :param task_id: Уникальный идентификатор задачи, добавляемой в категорию.
-        :type task_id: int
-        :return: None
-        """
-        if category_name in cls._categories:
-            if task_id not in cls._categories[category_name]:
-                cls._categories[category_name].append(task_id)
+    def _add_task_id(self, task_id: int) -> List[int]:
+        """Добавляет task_id в категорию."""
+        if self.name in self._categories:
+            if task_id not in self._categories[self.name]:
+                self._categories[self.name].append(task_id)
         else:
-            cls._categories[category_name] = [task_id]
-        cls._save_categories()
+            self._categories[self.name] = [task_id]
+        return self._categories[self.name]
+
+    def _save_to_file(self) -> None:
+        """Сохраняет все категории в файл."""
+        save_to_json_file(self._categories, self._filepath)
+
+    @property
+    def task_ids(self) -> List[int]:
+        """Возвращает список задач категории."""
+        return self._categories.get(self.name, [])
+
+    @task_ids.setter
+    def task_ids(self, task_ids: List[int]):
+        """Устанавливает список задач категории и сохраняет изменения."""
+        self._categories[self.name] = task_ids
+        self._save_to_file()
 
     @classmethod
-    def _save_categories(cls, filepath: str = CATEGORIES_FILEPATH) -> None:
-        """
-        Сохраняет категории в json файл.
-
-        :param filepath: Путь к файлу
-        :type filepath: str
-        :return: None
-        """
-        save_to_json_file(cls._categories, filepath)
-
-    @classmethod
-    def get_all_categories(cls) -> list:
-        return list(cls._categories.keys())
+    def get_all_categories(cls) -> dict:
+        """Возвращает реестр всех категорий."""
+        return cls._categories
 
 
 class TaskPriority(Enum):
@@ -66,21 +57,64 @@ class TaskStatus(Enum):
 
 
 class Task:
-    _tasks_count = 0
+    _filepath: str = TASKS_FILEPATH
+    _tasks: Dict[str, Dict] = open_json_file(_filepath)
+    _tasks_count: int = len(_tasks)
 
     def __new__(cls, *args, **kwargs):
         cls._tasks_count += 1
-        return super.__new__(cls)
+        return super().__new__(cls)
 
     def __init__(self, **kwargs):
-        self.id: int = self._tasks_count - 1
+        self.id: str = kwargs.get("id", str(self._tasks_count + 1))
         self.title: str = kwargs.get("title", "Без названия")
         self.description: str = kwargs.get("description", "")
         self.category: str = kwargs.get("category", "Общее")
         self.due_date: date = kwargs.get("due_date", date.today())
         self.priority: TaskPriority = kwargs.get("priority", TaskPriority.middle)
         self.status: TaskStatus = kwargs.get("status", TaskStatus.not_done)
-        Category.add_task_to_category(self.category, self.id)
+        self.priority: TaskPriority = (
+            kwargs.get("priority")
+            if isinstance(kwargs.get("priority"), TaskPriority)
+            else TaskPriority(kwargs.get("priority", TaskPriority.middle.value))
+        )
+        self.status: TaskStatus = (
+            kwargs.get("status")
+            if isinstance(kwargs.get("status"), TaskStatus)
+            else TaskStatus(kwargs.get("status", TaskStatus.not_done.value))
+        )
+        Category(self.category, int(self.id))
+
+        # Добавляем задачу в общий реестр задач
+        self._tasks[self.id] = {
+            "title": self.title,
+            "description": self.description,
+            "category": self.category,
+            "due_date": self.due_date.isoformat(),
+            "priority": self.priority.value,
+            "status": self.status.value,
+        }
+        self._save_to_file()
+
+    def _save_to_file(self) -> None:
+        """Сохраняет все задачи в файл."""
+        save_to_json_file(self._tasks, self._filepath)
+
+    @property
+    def task_data(self) -> Dict[str, Dict]:
+        """Возвращает данные задачи по ее id."""
+        return self._tasks.get(str(self.id), {})
+
+    @task_data.setter
+    def task_data(self, task_data: Dict[str, Dict]):
+        """Перезаписывает данные задачи и сохраняет изменения в файл."""
+        self._tasks[self.id] = task_data
+        self._save_to_file()
+
+    @classmethod
+    def get_all_tasks(cls) -> dict:
+        """Возвращает реестр всех задач."""
+        return cls._tasks
 
 
 class TaskManager:

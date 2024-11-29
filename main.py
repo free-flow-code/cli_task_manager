@@ -3,6 +3,7 @@ from colorama import init
 from constants import LOGO, MAIN_MENU, WAIT_COMMAND
 from models import TaskManager
 from args_processing import parse_arguments
+
 from exeptions import InvalidCommandException
 
 
@@ -14,7 +15,7 @@ def show_main_menu():
 def main():
     arguments = sys.argv[1:]
     if not arguments:
-        show_main_menu()
+        #show_main_menu()
         return
 
     try:
