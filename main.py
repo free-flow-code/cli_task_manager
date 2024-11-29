@@ -5,9 +5,10 @@ from constants import (
     MAIN_MENU,
     INPUT_ERROR,
     WAIT_COMMAND,
+    ARGS_HANDLERS,
     MAIN_MENU_HANDLERS
 )
-from models import CliArgsHandler
+from handlers import CliArgsHandler, CliMenuHandler
 from args_processing import parse_arguments
 from exeptions import InvalidCommandException
 
@@ -15,7 +16,7 @@ from exeptions import InvalidCommandException
 def show_main_menu(logo: bool = True):
     menu = MAIN_MENU
     if logo:
-        menu += LOGO
+        menu = LOGO + menu
     print(menu)
 
     try:
@@ -24,7 +25,9 @@ def show_main_menu(logo: bool = True):
             print(INPUT_ERROR)
             return show_main_menu(logo=False)
 
-        main_handler(input_number)
+        menu_handler = CliMenuHandler()
+        command = MAIN_MENU_HANDLERS[input_number]
+        menu_handler.execute_command(command)
     except ValueError:
         print(INPUT_ERROR)
         return show_main_menu(logo=False)
@@ -38,13 +41,14 @@ def main():
 
     try:
         args = parse_arguments()
-        command = args.command
+        action = args.command
 
-        if command is None:
+        if action is None:
             raise InvalidCommandException
 
-        task_manager = CliArgsHandler()
-        task_manager.execute_command(command, args.params)
+        args_handler = CliArgsHandler()
+        command = ARGS_HANDLERS[action]
+        args_handler.execute_command(command, args.params)
     except InvalidCommandException as err:
         print(err)
 

@@ -39,3 +39,7 @@ INPUT_ERROR = f"{Fore.RED}Некорректный ввод.{Style.RESET_ALL}"
 WAIT_COMMAND = f"{Fore.BLUE}Ожидание ввода:{Style.RESET_ALL} "
 CATEGORIES_FILEPATH = "data/categories.json"
 TASKS_FILEPATH = "data/tasks.json"
+CLI_MESSAGES = {
+    "task_not_found": f"{Fore.YELLOW}Задача не найдена. Проверьте правильность ввода.{Style.RESET_ALL}",
+    "incorrect_task_name": f"{Fore.YELLOW}Введите название задачи или 'all', чтобы посмотреть все задачи.{Style.RESET_ALL}",
+}

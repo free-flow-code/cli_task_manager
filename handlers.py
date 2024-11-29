@@ -1,5 +1,11 @@
 import sys
-from constants import ARGS_HANDLERS, MAIN_MENU_HANDLERS
+from models import Task
+from constants import (
+    ARGS_HANDLERS,
+    MAIN_MENU_HANDLERS,
+    CLI_MESSAGES
+)
+from utils import print_tasks
 from exeptions import InvalidCommandException
 
 
@@ -13,7 +19,7 @@ class BaseTaskHandler:
         """
         self.handlers = handlers
 
-    def execute_command(self, command: str, params: list) -> None:
+    def execute_command(self, command: str, params: list = None) -> None:
         """
         Запускает метод класса в зависимости от переданной команды.
         Если параметры присутствуют - передает их в соответствующий обработчик.
@@ -25,21 +31,21 @@ class BaseTaskHandler:
         :type params: list
         :return: None
         """
-        handler_name = self.handlers.get(command)
-        if handler_name:
-            handler = getattr(self, handler_name, None)
+        if command in dir(self):  # Проверяем, есть ли метод в текущем объекте
+            handler = getattr(self, command, None)
             if handler:
-                if params:
-                    handler(params)
-                else:
-                    handler()
-            else:
-                raise AttributeError(f"Обработчик '{handler_name}' не найден в классе {self.__class__.__name__}.")
+                handler(params)
         else:
             raise InvalidCommandException(f"Команда '{command}' не найдена.")
 
-    def view_task(self, params: list[str]):
-        pass
+    @staticmethod
+    def view_task(params: list[str]):
+        if not params:
+            print(CLI_MESSAGES.get("incorrect_task_name"))
+        elif params[0] == "all":
+            print_tasks(Task.get_all_tasks())
+        else:
+            print_tasks(Task.get_task_by_name(params[0]))
 
     def edit_task(self, params: list[str]):
         pass

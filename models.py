@@ -3,7 +3,8 @@ from datetime import date
 from typing import Dict, List
 from constants import (
     CATEGORIES_FILEPATH,
-    TASKS_FILEPATH
+    TASKS_FILEPATH,
+    CLI_MESSAGES
 )
 from files_processing import open_json_file, save_to_json_file
 
@@ -108,10 +109,19 @@ class Task:
         return self._tasks.get(str(self.id), {})
 
     @task_data.setter
-    def task_data(self, task_data: Dict[str, Dict]):
+    def task_data(self, task_data: Dict[str, Dict]) -> None:
         """Перезаписывает данные задачи и сохраняет изменения в файл."""
         self._tasks[self.id] = task_data
         self._save_to_file()
+
+    @classmethod
+    def get_task_by_name(cls, name: str) -> dict:
+        """Возвращает задачу по ее названию (title)."""
+        tasks = cls._tasks
+        for task_id, task_data in tasks.items():
+            if task_data["title"] == name:
+                return {task_id: task_data}
+        print(CLI_MESSAGES.get("task_not_found"))
 
     @classmethod
     def get_all_tasks(cls) -> dict:
