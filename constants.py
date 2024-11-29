@@ -44,5 +44,7 @@ CLI_MESSAGES = {
     "incorrect_task_name": f"{Fore.YELLOW}Введите название задачи. Или '--name all', чтобы посмотреть все задачи.{Style.RESET_ALL}",
     "incorrect_data": f"{Fore.YELLOW}Неверный формат данных.{Style.RESET_ALL}",
     "empty_data": f"{Fore.YELLOW}Данные не переданы.{Style.RESET_ALL}",
-    "success_update_task": f"{Fore.BLUE}Задача успешно обновлена.{Style.RESET_ALL}"
+    "success_add_task": f"{Fore.BLUE}Новая задача успешно добавлена.{Style.RESET_ALL}",
+    "success_update_task": f"{Fore.BLUE}Задача успешно обновлена.{Style.RESET_ALL}",
+    "task_already_exist": f"{Fore.RED}{{err}}{Style.RESET_ALL}"
 }

@@ -67,7 +67,24 @@ class BaseTaskHandler:
         print_tasks(tasks)
 
     @staticmethod
-    def edit_task(params: dict):
+    def add_task(params: dict) -> None:
+        """Добавляет новую задачу."""
+        data = validate_data(params.get("data"))
+        if not data:
+            return
+
+        try:
+            task = Task(**data)
+        except ValueError as err:
+            print(CLI_MESSAGES.get("task_already_exist").format(err=err))
+            return
+
+        print(CLI_MESSAGES.get("success_add_task"))
+        print_tasks({task.id: task.task_data})
+
+    @staticmethod
+    def edit_task(params: dict) -> None:
+        """Обновляет данные задачи по ее названию или id."""
         data = validate_data(params.get("data"))
         if not data:
             return
@@ -88,7 +105,7 @@ class BaseTaskHandler:
         updated_data = {**task.task_data, **data}
         task.task_data = updated_data
         print(CLI_MESSAGES.get("success_update_task"))
-        print_tasks({task.id:updated_data})
+        print_tasks({task.id: updated_data})
 
     def find_task(self, params: list[str]):
         pass

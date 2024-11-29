@@ -70,8 +70,12 @@ class Task:
         return super().__new__(cls)
 
     def __init__(self, **kwargs):
+        title = kwargs.get("title", "Без названия")
+        if self._title_exists(title):
+            raise ValueError(f"Задача с названием '{title}' уже существует.")
+
         self.id: str = kwargs.get("id", str(self._tasks_count + 1))
-        self.title: str = kwargs.get("title", "Без названия")
+        self.title: str = title
         self.description: str = kwargs.get("description", "")
         self.category: str = kwargs.get("category", "Общее")
         self.due_date: date = kwargs.get("due_date", date.today())
@@ -117,16 +121,7 @@ class Task:
 
     @classmethod
     def from_dict(cls, task_id: str, task_data: dict) -> "Task":
-        """
-        Создает экземпляр Task из словаря.
-
-        :param task_id: Идентификатор задачи
-        :type task_id: str
-        :param task_data: Словарь с данными задачи
-        :type task_data: dict
-        :return: Объект Task
-        :rtype: Task
-        """
+        """Создает экземпляр Task из словаря."""
         return cls(
             id=task_id,
             title=task_data["title"],
@@ -156,6 +151,11 @@ class Task:
                 return cls.from_dict(task_id, task_data)
         print(CLI_MESSAGES.get("task_not_found"))
         return None
+
+    @classmethod
+    def _title_exists(cls, title: str) -> bool:
+        """Проверяет, существует ли задача с заданным названием."""
+        return any(task["title"] == title for task in cls._tasks.values())
 
     @classmethod
     def get_all_tasks(cls) -> dict:
