@@ -1,9 +1,11 @@
 from enum import Enum
 from datetime import date
 from typing import Dict, List
-from constants import HANDLERS, CATEGORIES_FILEPATH, TASKS_FILEPATH
+from constants import (
+    CATEGORIES_FILEPATH,
+    TASKS_FILEPATH
+)
 from files_processing import open_json_file, save_to_json_file
-from exeptions import InvalidCommandException
 
 
 class Category:
@@ -115,42 +117,3 @@ class Task:
     def get_all_tasks(cls) -> dict:
         """Возвращает реестр всех задач."""
         return cls._tasks
-
-
-class TaskManager:
-    def __init__(self):
-        self.handlers: dict = HANDLERS
-
-    def execute_command(self, command: str, params: list) -> None:
-        """
-        Запускает метод класса в зависимости от переданной команды.
-        Если параметры присутствуют - передает их в соответствующий обработчик.
-        Если нет - вызывает обработчик без параметров.
-
-        :param command: Название команды.
-        :type command: str
-        :param params: Параметры команды.
-        :type params: list
-        :return: None
-        """
-        handler_name = self.handlers.get(command)
-        if handler_name:
-            handler = getattr(self, handler_name)
-            if params:
-                handler(params)
-            else:
-                handler()
-        else:
-            raise InvalidCommandException
-
-    def view_task(self, params: list[str]):
-        pass
-
-    def edit_task(self, params: list[str]):
-        pass
-
-    def find_task(self, params: list[str]):
-        pass
-
-    def delete_task(self, params: list[str]):
-        pass
