@@ -84,8 +84,11 @@ class BaseTaskHandler:
 
         if not task:
             return
-        task.task_data = {"id": task.id, **task.task_data, **data}
-        print(CLI_MESSAGES.get("seccess_update_task"))
+
+        updated_data = {**task.task_data, **data}
+        task.task_data = updated_data
+        print(CLI_MESSAGES.get("success_update_task"))
+        print_tasks({task.id:updated_data})
 
     def find_task(self, params: list[str]):
         pass

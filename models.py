@@ -154,6 +154,7 @@ class Task:
         for task_id, task_data in tasks.items():
             if task_id == sought_id:
                 return cls.from_dict(task_id, task_data)
+        print(CLI_MESSAGES.get("task_not_found"))
         return None
 
     @classmethod
