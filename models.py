@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Optional
 from constants import (
     CATEGORIES_FILEPATH,
     TASKS_FILEPATH,
@@ -105,7 +105,7 @@ class Task:
 
     @property
     def task_data(self) -> Dict[str, Dict]:
-        """Возвращает данные задачи по ее id."""
+        """Возвращает данные задачи"""
         return self._tasks.get(str(self.id), {})
 
     @task_data.setter
@@ -115,13 +115,45 @@ class Task:
         self._save_to_file()
 
     @classmethod
-    def get_task_by_name(cls, name: str) -> dict:
-        """Возвращает задачу по ее названию (title)."""
+    def from_dict(cls, task_id: str, task_data: dict) -> "Task":
+        """
+        Создает экземпляр Task из словаря.
+
+        :param task_id: Идентификатор задачи
+        :type task_id: str
+        :param task_data: Словарь с данными задачи
+        :type task_data: dict
+        :return: Объект Task
+        :rtype: Task
+        """
+        return cls(
+            id=task_id,
+            title=task_data["title"],
+            description=task_data["description"],
+            category=task_data["category"],
+            due_date=date.fromisoformat(task_data["due_date"]),
+            priority=TaskPriority(task_data["priority"]),
+            status=TaskStatus(task_data["status"]),
+        )
+
+    @classmethod
+    def get_task_by_name(cls, name: str) -> Optional["Task"]:
+        """Возвращает объект задачи по её названию (title)."""
         tasks = cls._tasks
         for task_id, task_data in tasks.items():
             if task_data["title"] == name:
-                return {task_id: task_data}
+                return cls.from_dict(task_id, task_data)
         print(CLI_MESSAGES.get("task_not_found"))
+        return None
+
+    @classmethod
+    def get_task_by_id(cls, sought_id: str) -> Optional["Task"]:
+        """Возвращает объект задачи по её id."""
+        tasks = cls._tasks
+        for task_id, task_data in tasks.items():
+            if task_id == sought_id:
+                return cls.from_dict(task_id, task_data)
+        return None
 
     @classmethod
     def get_all_tasks(cls) -> dict:

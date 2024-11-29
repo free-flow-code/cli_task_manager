@@ -1,4 +1,5 @@
 from prettytable import PrettyTable
+from main import show_main_menu
 
 
 def print_tasks(data: dict[str, dict]) -> None:
@@ -8,3 +9,4 @@ def print_tasks(data: dict[str, dict]) -> None:
     for key, value in data.items():
         table.add_row([key, *value.values()])
     print(table)
+    show_main_menu(logo=False)

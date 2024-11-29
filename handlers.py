@@ -19,7 +19,7 @@ class BaseTaskHandler:
         """
         self.handlers = handlers
 
-    def execute_command(self, command: str, params: list = None) -> None:
+    def execute_command(self, command: str, params: dict = None) -> None:
         """
         Запускает метод класса в зависимости от переданной команды.
         Если параметры присутствуют - передает их в соответствующий обработчик.
@@ -39,15 +39,32 @@ class BaseTaskHandler:
             raise InvalidCommandException(f"Команда '{command}' не найдена.")
 
     @staticmethod
-    def view_task(params: list[str]):
-        if not params:
-            print(CLI_MESSAGES.get("incorrect_task_name"))
-        elif params[0] == "all":
-            print_tasks(Task.get_all_tasks())
+    def view_task(params: dict) -> None:
+        """
+        Выводит в консоль задачу по ее названию или id.
+        Либо выводит список всех задач, если задан соответствующий параметр.
+        """
+        task_name = params.get("name")
+        task_id = str(params.get("id"))
+        tasks = None
+        if task_name:
+            if task_name == "all":
+                tasks = Task.get_all_tasks()
+            else:
+                task = Task.get_task_by_name(task_name)
+                tasks = {task.id: task.task_data} if task else None
+        elif task_id:
+            task = Task.get_task_by_id(task_id)
+            tasks = {task_id: task.task_data} if task else None
         else:
-            print_tasks(Task.get_task_by_name(params[0]))
+            print(CLI_MESSAGES.get("incorrect_task_name"))
+        if not tasks:
+            print(CLI_MESSAGES.get("task_not_found"))
+            return
+        print_tasks(tasks)
 
-    def edit_task(self, params: list[str]):
+    @staticmethod
+    def edit_task(params: dict):
         pass
 
     def find_task(self, params: list[str]):
