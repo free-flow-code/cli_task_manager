@@ -5,7 +5,7 @@ from constants import (
     MAIN_MENU_HANDLERS,
     CLI_MESSAGES
 )
-from utils import print_tasks
+from utils import print_tasks, validate_data
 from exeptions import InvalidCommandException
 
 
@@ -47,6 +47,7 @@ class BaseTaskHandler:
         task_name = params.get("name")
         task_id = str(params.get("id"))
         tasks = None
+
         if task_name:
             if task_name == "all":
                 tasks = Task.get_all_tasks()
@@ -58,14 +59,33 @@ class BaseTaskHandler:
             tasks = {task_id: task.task_data} if task else None
         else:
             print(CLI_MESSAGES.get("incorrect_task_name"))
+
         if not tasks:
             print(CLI_MESSAGES.get("task_not_found"))
             return
+
         print_tasks(tasks)
 
     @staticmethod
     def edit_task(params: dict):
-        pass
+        data = validate_data(params.get("data"))
+        if not data:
+            return
+
+        task_name = params.get("name")
+        task_id = str(params.get("id"))
+
+        if task_name:
+            task = Task.get_task_by_name(task_name)
+        elif task_id:
+            task = Task.get_task_by_id(task_id)
+        else:
+            return
+
+        if not task:
+            return
+        task.task_data = {"id": task.id, **task.task_data, **data}
+        print(CLI_MESSAGES.get("seccess_update_task"))
 
     def find_task(self, params: list[str]):
         pass

@@ -1,5 +1,6 @@
 from enum import Enum
 from datetime import date
+from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
 from constants import (
     CATEGORIES_FILEPATH,
@@ -159,3 +160,12 @@ class Task:
     def get_all_tasks(cls) -> dict:
         """Возвращает реестр всех задач."""
         return cls._tasks
+
+
+class TaskModel(BaseModel):
+    title: str
+    description: Optional[str] = Field(default="")
+    category: Optional[str] = Field(default="Общее")
+    due_date: Optional[date] = Field(default_factory=date.today)
+    priority: TaskPriority = Field(default=TaskPriority.middle)
+    status: TaskStatus = Field(default=TaskStatus.not_done)
