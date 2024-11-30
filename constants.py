@@ -40,11 +40,18 @@ WAIT_COMMAND = f"{Fore.BLUE}Ожидание ввода:{Style.RESET_ALL} "
 CATEGORIES_FILEPATH = "data/categories.json"
 TASKS_FILEPATH = "data/tasks.json"
 CLI_MESSAGES = {
+    "incorrect_params": f"{Fore.RED}Не верно указаны параметры. Для справки: python main.py -h{Style.RESET_ALL}",
     "task_not_found": f"{Fore.YELLOW}Задача не найдена. Проверьте правильность ввода.{Style.RESET_ALL}",
     "incorrect_task_name": f"{Fore.YELLOW}Введите название задачи. Или '--name all', чтобы посмотреть все задачи.{Style.RESET_ALL}",
     "incorrect_data": f"{Fore.YELLOW}Неверный формат данных.{Style.RESET_ALL}",
     "empty_data": f"{Fore.YELLOW}Данные не переданы.{Style.RESET_ALL}",
     "success_add_task": f"{Fore.BLUE}Новая задача успешно добавлена.{Style.RESET_ALL}",
     "success_update_task": f"{Fore.BLUE}Задача успешно обновлена.{Style.RESET_ALL}",
-    "task_already_exist": f"{Fore.RED}{{err}}{Style.RESET_ALL}"
+    "task_already_exist": f"{Fore.RED}{{err}}{Style.RESET_ALL}",
+    "category_not_found": f"{Fore.RED}Такой категории не существует.{Style.RESET_ALL}",
+    "task_not_found_by_category": f"{Fore.YELLOW}В данной категории нет задач.{Style.RESET_ALL}",
+    "task_not_found_by_keyword": f"{Fore.YELLOW}По данным ключевым словам задач не найдено.{Style.RESET_ALL}",
+    "task_not_found_by_status": f"{Fore.YELLOW}Нет задач с таким статусом.{Style.RESET_ALL}",
+    "incorrect_find_data": f"{Fore.YELLOW}Укажите категорию, ключевые слова или статус задачи для поиска.{Style.RESET_ALL}",
+    "incorrect_status": f"{Fore.YELLOW}Некорректное значение статуса: {{status}}{Style.RESET_ALL}"
 }

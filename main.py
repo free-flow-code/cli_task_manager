@@ -49,7 +49,7 @@ def main():
         args_handler = CliArgsHandler()
         command = ARGS_HANDLERS[action]
         args_handler.execute_command(command, vars(args))
-    except InvalidCommandException as err:
+    except Exception as err:
         print(err)
 
 

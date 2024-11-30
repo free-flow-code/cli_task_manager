@@ -19,7 +19,7 @@ class BaseTaskHandler:
         """
         self.handlers = handlers
 
-    def execute_command(self, command: str, params: dict = None) -> None:
+    def execute_command(self, command: str, params: dict) -> None:
         """
         Запускает метод класса в зависимости от переданной команды.
         Если параметры присутствуют - передает их в соответствующий обработчик.
@@ -28,15 +28,19 @@ class BaseTaskHandler:
         :param command: Название команды.
         :type command: str
         :param params: Параметры команды.
-        :type params: list
+        :type params: dict
         :return: None
         """
-        if command in dir(self):  # Проверяем, есть ли метод в текущем объекте
-            handler = getattr(self, command, None)
-            if handler:
-                handler(params)
-        else:
-            raise InvalidCommandException(f"Команда '{command}' не найдена.")
+        try:
+            if command in dir(self):  # Проверяем, есть ли метод в текущем объекте
+                handler = getattr(self, command, None)
+                if handler:
+                    handler(params)
+            else:
+                raise InvalidCommandException(f"Команда '{command}' не найдена.")
+        except TypeError:
+            print(CLI_MESSAGES.get("incorrect_params"))
+            return
 
     @staticmethod
     def view_task(params: dict) -> None:
@@ -107,8 +111,26 @@ class BaseTaskHandler:
         print(CLI_MESSAGES.get("success_update_task"))
         print_tasks({task.id: updated_data})
 
-    def find_task(self, params: list[str]):
-        pass
+    @staticmethod
+    def find_task(params: dict) -> None:
+        """Производит поиск задач по категории, ключевым словам в названии и статусу."""
+        category = params.get("category")
+        keyword = params.get("keyword")
+        status = params.get("status")
+
+        if category:
+            tasks = Task.find_tasks_by_category(category)
+        elif keyword:
+            tasks = Task.find_tasks_by_keyword(keyword)
+        elif status:
+            tasks = Task.find_tasks_by_status(status)
+        else:
+            print(CLI_MESSAGES.get("incorrect_find_data"))
+            return
+
+        if not tasks:
+            return
+        print_tasks(tasks)
 
     def delete_task(self, params: list[str]):
         pass

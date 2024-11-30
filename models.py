@@ -48,6 +48,15 @@ class Category:
         """Возвращает реестр всех категорий."""
         return cls._categories
 
+    @classmethod
+    def get_task_ids_by_category(cls, category_name: str) -> Optional[List[int]]:
+        """Возвращает список id задач для заданной категории."""
+        category_task_ids = cls._categories.get(category_name, None)
+        if category_task_ids is None:
+            print(CLI_MESSAGES.get("category_not_found"))
+            return
+        return category_task_ids
+
 
 class TaskPriority(Enum):
     low = "Низкий"
@@ -151,6 +160,50 @@ class Task:
                 return cls.from_dict(task_id, task_data)
         print(CLI_MESSAGES.get("task_not_found"))
         return None
+
+    @classmethod
+    def find_tasks_by_category(cls, category: str) -> Optional[dict]:
+        """Поиск задач в указанной категории. Возвращает словарь с данными задач."""
+        category_task_ids = Category.get_task_ids_by_category(category)
+        if category_task_ids is None:
+            return
+        elif not category_task_ids:
+            print(CLI_MESSAGES.get("task_not_found_by_category"))
+            return
+
+        matched_tasks = {}
+        for task_id in category_task_ids:
+            matched_tasks.update({task_id: cls._tasks.get(str(task_id))})
+        return matched_tasks
+
+    @classmethod
+    def find_tasks_by_keyword(cls, keyword: str) -> Optional[dict]:
+        """Поиск задач по ключевым словам. Возвращает словарь с данными задач."""
+        matched_tasks = {}
+        for task_id, task_data in cls.get_all_tasks().items():
+            if keyword.lower() in task_data["title"].lower():
+                matched_tasks.update({task_id: task_data})
+        if not matched_tasks:
+            print(CLI_MESSAGES.get("task_not_found_by_keyword"))
+            return
+        return matched_tasks
+
+    @classmethod
+    def find_tasks_by_status(cls, status: str) -> Optional[dict]:
+        """Поиск задач по их статусу. Возвращает словарь с данными задач."""
+        status = status.capitalize()
+        if status in TaskStatus._value2member_map_:
+            matched_tasks = {}
+            for task_id, task_data in cls.get_all_tasks().items():
+                if status == task_data["status"]:
+                    matched_tasks.update({task_id: task_data})
+
+            if not matched_tasks:
+                print(CLI_MESSAGES.get("task_not_found_by_status"))
+                return
+            return matched_tasks
+        else:
+            print(CLI_MESSAGES.get("incorrect_status").format(status=status))
 
     @classmethod
     def _title_exists(cls, title: str) -> bool:
