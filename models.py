@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import date
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional
 from constants import (
     CATEGORIES_FILEPATH,
@@ -113,9 +113,10 @@ class Task:
         }
         self._save_to_file()
 
-    def _save_to_file(self) -> None:
+    @classmethod
+    def _save_to_file(cls) -> None:
         """Сохраняет все задачи в файл."""
-        save_to_json_file(self._tasks, self._filepath)
+        save_to_json_file(cls._tasks, cls._filepath)
 
     @property
     def task_data(self) -> Dict[str, Dict]:
@@ -129,37 +130,40 @@ class Task:
         self._save_to_file()
 
     @classmethod
-    def from_dict(cls, task_id: str, task_data: dict) -> "Task":
-        """Создает экземпляр Task из словаря."""
-        return cls(
-            id=task_id,
-            title=task_data["title"],
-            description=task_data["description"],
-            category=task_data["category"],
-            due_date=date.fromisoformat(task_data["due_date"]),
-            priority=TaskPriority(task_data["priority"]),
-            status=TaskStatus(task_data["status"]),
-        )
+    def get_task_by_id(cls, task_id) -> Optional[dict]:
+        """Возвращает данные задачи по ее id."""
+        if task_id in cls._tasks:
+            return {task_id: cls._tasks.get(task_id)}
+        return
 
     @classmethod
-    def get_task_by_name(cls, name: str) -> Optional["Task"]:
-        """Возвращает объект задачи по её названию (title)."""
-        tasks = cls._tasks
-        for task_id, task_data in tasks.items():
-            if task_data["title"] == name:
-                return cls.from_dict(task_id, task_data)
-        print(CLI_MESSAGES.get("task_not_found"))
-        return None
+    def get_task_by_name(cls, task_name):
+        """Возвращает данные задачи по ее названию."""
+        for task_id, task_data in cls._tasks.items():
+            if task_data["title"] == task_name:
+                return cls.get_task_by_id(task_id)
+        return
 
     @classmethod
-    def get_task_by_id(cls, sought_id: str) -> Optional["Task"]:
-        """Возвращает объект задачи по её id."""
-        tasks = cls._tasks
-        for task_id, task_data in tasks.items():
-            if task_id == sought_id:
-                return cls.from_dict(task_id, task_data)
-        print(CLI_MESSAGES.get("task_not_found"))
-        return None
+    def update_task_by_id(cls, task_id: str, data: dict) -> Optional[dict]:
+        """Обновляет данные задачи по её id."""
+        if task_id in cls._tasks:
+            task_data = cls._tasks.get(task_id)
+            del data["title"]
+            task_data.update(data)
+            updated_data = {task_id: task_data}
+            cls._tasks.update(updated_data)
+            cls._save_to_file()
+            return updated_data
+        return
+
+    @classmethod
+    def update_task_by_name(cls, task_name: str, data: dict) -> Optional[dict]:
+        """Обновляет данные задачи по её названию (title)."""
+        for task_id, task_data in cls._tasks.items():
+            if task_data["title"] == task_name:
+                return cls.update_task_by_id(task_id, data)
+        return
 
     @classmethod
     def find_tasks_by_category(cls, category: str) -> Optional[dict]:
@@ -215,11 +219,55 @@ class Task:
         """Возвращает реестр всех задач."""
         return cls._tasks
 
+    @classmethod
+    def delete_task_by_id(cls, task_id: str) -> bool:
+        """Удаляет задачу по её id и сохраняет изменения в файл."""
+        if task_id not in cls._tasks:
+            return False
 
-class TaskModel(BaseModel):
+        del cls._tasks[task_id]
+        cls._save_to_file()
+        return True
+
+    @classmethod
+    def delete_task_by_name(cls, task_name: str) -> bool:
+        """Удаляет задачу по её названию и сохраняет изменения в файл."""
+        for task_id, task_data in cls._tasks.items():
+            if task_data["title"] == task_name:
+                return cls.delete_task_by_id(task_id)
+        return False
+
+
+class TaskCreateModel(BaseModel):
     title: str
     description: Optional[str] = Field(default="")
     category: Optional[str] = Field(default="Общее")
     due_date: Optional[date] = Field(default_factory=date.today)
     priority: TaskPriority = Field(default=TaskPriority.middle)
     status: TaskStatus = Field(default=TaskStatus.not_done)
+
+    @field_validator('priority', mode='before')
+    def validate_priority(cls, value):
+        if isinstance(value, str):
+            value = value.capitalize()
+        return value
+
+    @field_validator('status', mode='before')
+    def validate_status(cls, value):
+        if isinstance(value, str):
+            value = value.capitalize()
+        return value
+
+    def dict(self, *args, **kwargs):
+        result = super().dict(*args, **kwargs)
+        result['due_date'] = str(result['due_date'])
+        result['priority'] = result['priority'].value  # Получаем строковое значение из перечисления
+        result['status'] = result['status'].value  # Получаем строковое значение из перечисления
+        return result
+
+
+class TaskUpdateModel(TaskCreateModel):
+    title: Optional[str] = None
+
+    class Config:
+        extra = "forbid"  # Запрещает добавлять неизвестные поля для обновлений

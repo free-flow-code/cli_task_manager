@@ -50,25 +50,25 @@ class BaseTaskHandler:
         """
         task_name = params.get("name")
         task_id = str(params.get("id"))
-        tasks = None
 
         if task_name:
             if task_name == "all":
                 tasks = Task.get_all_tasks()
+                print_tasks(tasks)
+                return
             else:
                 task = Task.get_task_by_name(task_name)
-                tasks = {task.id: task.task_data} if task else None
+                print(task)
         elif task_id:
             task = Task.get_task_by_id(task_id)
-            tasks = {task_id: task.task_data} if task else None
         else:
-            print(CLI_MESSAGES.get("incorrect_task_name"))
-
-        if not tasks:
-            print(CLI_MESSAGES.get("task_not_found"))
+            print(CLI_MESSAGES.get("incorrect_task_index"))
             return
 
-        print_tasks(tasks)
+        if not task:
+            print(CLI_MESSAGES.get("task_not_found"))
+            return
+        print_tasks(task)
 
     @staticmethod
     def add_task(params: dict) -> None:
@@ -89,7 +89,7 @@ class BaseTaskHandler:
     @staticmethod
     def edit_task(params: dict) -> None:
         """Обновляет данные задачи по ее названию или id."""
-        data = validate_data(params.get("data"))
+        data = validate_data(params.get("data"), creating=False)
         if not data:
             return
 
@@ -97,19 +97,20 @@ class BaseTaskHandler:
         task_id = str(params.get("id"))
 
         if task_name:
-            task = Task.get_task_by_name(task_name)
+            updated_data = Task.update_task_by_name(task_name, data)
         elif task_id:
-            task = Task.get_task_by_id(task_id)
+            updated_data = Task.update_task_by_id(str(task_id), data)
         else:
+            print(CLI_MESSAGES.get("incorrect_task_index"))
             return
 
-        if not task:
+        if not updated_data:
+            print(CLI_MESSAGES.get("task_not_found"))
             return
 
-        updated_data = {**task.task_data, **data}
-        task.task_data = updated_data
         print(CLI_MESSAGES.get("success_update_task"))
-        print_tasks({task.id: updated_data})
+        print(updated_data)
+        print_tasks(updated_data)
 
     @staticmethod
     def find_task(params: dict) -> None:
@@ -132,8 +133,24 @@ class BaseTaskHandler:
             return
         print_tasks(tasks)
 
-    def delete_task(self, params: list[str]):
-        pass
+    @staticmethod
+    def delete_task(params: dict) -> None:
+        """Удаляет задачу по ее имени или id."""
+        task_name = params.get("name")
+        task_id = str(params.get("id"))
+
+        if task_name:
+            is_deleted = Task.delete_task_by_name(task_name)
+        elif task_id:
+            is_deleted = Task.delete_task_by_id(str(task_id))
+        else:
+            print(CLI_MESSAGES.get("incorrect_task_index"))
+            return
+
+        if is_deleted:
+            print(CLI_MESSAGES.get("success_del_task"))
+            return
+        print(CLI_MESSAGES.get("task_not_found"))
 
 
 class CliArgsHandler(BaseTaskHandler):

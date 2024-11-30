@@ -12,7 +12,7 @@ def parse_arguments():
         )
     )
     parser.add_argument(
-        "-c", "--command", choices=["view", "add", "edit", "find", "delete"], help="Команда для выполнения."
+        "-c", "--command", choices=["view", "add", "edit", "find", "del"], help="Команда для выполнения."
     )
     parser.add_argument("--id", type=int, help="id задачи для изменения или удаления.")
     parser.add_argument("--name", type=str, help="Название задачи для изменения или удаления.")

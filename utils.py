@@ -1,7 +1,7 @@
 import json
 from typing import Optional
-from models import TaskModel
 from pydantic import ValidationError
+from models import TaskCreateModel, TaskUpdateModel
 from prettytable import PrettyTable
 from constants import CLI_MESSAGES
 
@@ -15,7 +15,7 @@ def print_tasks(data: dict[str, dict]) -> None:
     print(table)
 
 
-def validate_data(data: str | dict) -> Optional[dict]:
+def validate_data(data: str | dict, creating: bool = True) -> Optional[dict]:
     try:
         if not data:
             print(CLI_MESSAGES.get("empty_data"))
@@ -26,8 +26,13 @@ def validate_data(data: str | dict) -> Optional[dict]:
             double_quote = '"'
             data = data.replace(quote, double_quote)
             data = json.loads(data)
-        validated_data = TaskModel(**data)
-        return data
+
+        if creating:
+            validated_data = TaskCreateModel(**data)
+        else:
+            validated_data = TaskUpdateModel(**data)
+
+        return validated_data.dict()
     except json.JSONDecodeError:
         print(CLI_MESSAGES.get("incorrect_data"))
         return
